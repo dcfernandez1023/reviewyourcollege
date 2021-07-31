@@ -67,10 +67,10 @@ const Colleges = (props) => {
   }
 
   return (
-    <Container className="app-width">
-      <Row className="reviewyourcollege-header">
-        <Col> <h1> Find, rate, and read reviews about your college </h1> </Col>
-      </Row>
+    <Container>
+      <div className="reviewyourcollege-header">
+        <h1> Find, rate, and read reviews about your college </h1>
+      </div>
       <br/>
       <Row>
         <Col>
@@ -98,15 +98,30 @@ const Colleges = (props) => {
               }
             </Col>
           </Row>
-          <br/>
           <Row>
             <Col>
               {isFiltering ?
                 <ListGroup variant="flush">
                   {filtered.map((college) => {
                     return (
-                      <ListGroup.Item action key={college.id}>
-                        <div> {college.name} </div>
+                      <ListGroup.Item
+                        action
+                        key={college.id}
+                        onClick={() => {
+                          window.location.pathname = "/college/" + college.id}}
+                      >
+                        <Row>
+                          <Col xs={6}>
+                            {college.name}
+                          </Col>
+                          <Col xs={6}>
+                            {college.avgRating == -1 ?
+                              <span> No ratings </span>
+                            :
+                              <span> Avg rating: {college.avgRating} </span>
+                            }
+                          </Col>
+                        </Row>
                       </ListGroup.Item>
                     );
                   })}
@@ -115,8 +130,23 @@ const Colleges = (props) => {
                 <ListGroup variant="flush">
                   {colleges.map((college) => {
                     return (
-                      <ListGroup.Item action key={college.id}>
-                        <div> {college.name} </div>
+                      <ListGroup.Item
+                        action
+                        key={college.id}
+                        onClick={() => {window.location.pathname = "/college/" + college.id}}
+                      >
+                        <Row>
+                          <Col xs={6}>
+                            {college.name}
+                          </Col>
+                          <Col xs={6} className="right-align">
+                            {college.avgRating == -1 ?
+                              <span> No ratings </span>
+                            :
+                              <span> Avg rating: {college.avgRating} </span>
+                            }
+                          </Col>
+                        </Row>
                       </ListGroup.Item>
                     );
                   })}
