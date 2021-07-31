@@ -1,4 +1,37 @@
-.App {
+.navbar-linear {
+  background: rgb(255,155,244);
+  background: linear-gradient(90deg, rgba(240, 178, 122,1) 0%, rgba(175, 96, 26,1) 100%);
+}
+
+.reviewyourcollege-header h1 {
+  background-color: #ff9bf4;
+  background-image: linear-gradient(90deg, rgba(240, 178, 122,1) 0%, rgba(175, 96, 26,1) 100%);
+  -webkit-background-clip: text;
+  -moz-background-clip: text;
+  -webkit-text-fill-color: rgba(255,255,255,0);
+  -moz-text-fill-color: rgba(255,255,255,0);
+  text-align: center;
+  height: 100%;
+}
+
+.spinner-container {
+  text-align: center;
+  margin-top: 25px;
+}
+
+.app-width {
+  width: 60%;
+}
+
+.right-align {
+  text-align: right;
+}
+
+.left-align {
+  text-align: left;
+}
+
+.center-align {
   text-align: center;
 }
 

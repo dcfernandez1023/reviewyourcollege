@@ -1,10 +1,12 @@
 import './styles/App.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import Home from './views/Home.js';
 
 function App() {
   return (
-    <div>
-      reviewyourcollege
-    </div>
+    <body>
+      <Home />
+    </body>
   );
 }
 
