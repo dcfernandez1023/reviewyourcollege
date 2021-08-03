@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Navbar, Nav, Form, Spinner, ListGroup } from 'react-bootstrap';
+import { Container, Row, Col, Navbar, Nav, Form, Spinner, ListGroup, Button } from 'react-bootstrap';
 import {
   BrowserRouter as Router,
   Switch,
@@ -34,7 +34,7 @@ const Colleges = (props) => {
   **/
   const setCollegeListener = () => {
     setIsLoading(true);
-    COLLEGE_CONTROLLER.listenOnCollegeTable(callbackOnError).limit(100)
+    COLLEGE_CONTROLLER.listenOnCollegeTable(callbackOnError).limit(10)
       .onSnapshot(quereySnapshot => {
         var temp = [];
         for(var i = 0; i < quereySnapshot.docs.length; i++) {
@@ -82,15 +82,19 @@ const Colleges = (props) => {
           />
         </Col>
       </Row>
+      <Row>
+        <Col className="right-align">
+          <div> Don't see your college? Add it <a href="/">here</a>. </div>
+        </Col>
+      </Row>
       {isLoading ?
         <div className="spinner-container">
           <Spinner animation="border" />
         </div>
       :
         <div>
-          <br/>
-          <Row>
-            <Col className="right-align">
+          <Row style={{marginBottom: "8px"}}>
+            <Col>
               {isFiltering ?
                 <strong> Showing {filtered.length} colleges </strong>
               :
@@ -114,7 +118,7 @@ const Colleges = (props) => {
                           <Col xs={6}>
                             {college.name}
                           </Col>
-                          <Col xs={6}>
+                          <Col xs={6} className="right-align">
                             {college.avgRating == -1 ?
                               <span> No ratings </span>
                             :
