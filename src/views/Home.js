@@ -16,12 +16,12 @@ const Home = (props) => {
   return (
     <div>
       <Navbar className="navbar-linear" variant="dark">
-        <Container style={{width: "60%", height: "100%"}}>
+        <Container className="container-width">
           <Navbar.Brand href="/"> <h3> reviewyourcollege </h3> </Navbar.Brand>
         </Container>
       </Navbar>
       <br/>
-      <Container style={{width: "60%"}}>
+      <Container className="container-width">
         <Router>
           <Switch>
             <Route path="/college/:collegeId">

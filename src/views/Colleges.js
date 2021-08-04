@@ -90,9 +90,12 @@ const Colleges = (props) => {
 
   return (
     <Container>
-      <div className="reviewyourcollege-header">
-        <h1> Find, rate, and read reviews about your college </h1>
-      </div>
+      <br/>
+      <Row className="reviewyourcollege-header">
+        <Col>
+          <h1> Find, rate, and read reviews about your college </h1>
+        </Col>
+      </Row>
       <br/>
       <Row>
         <Col>
@@ -104,7 +107,7 @@ const Colleges = (props) => {
           />
         </Col>
       </Row>
-      <Row>
+      <Row style={{marginBottom: "10px"}}>
         <Col className="right-align">
           <div> Don't see your college? Add it <a href="https://docs.google.com/forms/d/e/1FAIpQLSf597udVymArVvKtZfODUy75FXw0kfPHfSP30vp-6vkwgkGNg/viewform?usp=sf_link">here</a>. </div>
         </Col>

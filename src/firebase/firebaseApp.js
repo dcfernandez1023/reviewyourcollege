@@ -1,3 +1,4 @@
+import "firebase/analytics";
 var firebase = require('firebase');
 
 const firebaseConfig = {
@@ -11,3 +12,4 @@ const firebaseConfig = {
 };
 
 export var app = firebase.default.initializeApp(firebaseConfig);
+export const analytics = firebase.default.analytics();

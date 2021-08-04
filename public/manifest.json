@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "reviewyourcollege",
+  "name": "reviewyourcollege - Find, rate, and read reviews about your college",
   "icons": [
     {
       "src": "favicon.ico",
