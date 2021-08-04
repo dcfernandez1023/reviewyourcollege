@@ -241,7 +241,7 @@ const CollegePage = (props) => {
                         <hr style={{border: "1px solid lightGray", width: "25%"}} />
                         <Accordion flush>
                           <Accordion.Item eventKey="0">
-                            <Accordion.Header> Comment Thread </Accordion.Header>
+                            <Accordion.Header> Comment Thread {"(" + review.comments.length.toString() + ")"} </Accordion.Header>
                             <Accordion.Body>
                               {review.comments.length == 0 ?
                                 <p> No comments yet </p>
