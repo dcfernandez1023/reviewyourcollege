@@ -88,7 +88,7 @@ const CollegePage = (props) => {
   }
 
   const writeComment = (reviewId) => {
-    if(newComment.length == 0) {
+    if(newComment[reviewId] === undefined || newComment[reviewId].trim().length == 0) {
       return;
     }
     var commentObj = Object.assign({}, COMMENT_MODEL.comment);
@@ -184,14 +184,7 @@ const CollegePage = (props) => {
                   <Form.Select
                     onChange={(e) => {
                       let val = e.target.value;
-                      if(val === "add") {
-                        let currCategory = category;
-                        setCategory(currCategory);
-                        window.open('/', "_blank");
-                      }
-                      else {
-                        setCategory(e.target.value);
-                      }
+                      setCategory(e.target.value);
                     }}
                   >
                     <option value="all"> All </option>
@@ -202,7 +195,6 @@ const CollegePage = (props) => {
                         </option>
                       );
                     })}
-                    <option value="add"> + Add a category </option>
                   </Form.Select>
                 </InputGroup>
               </Col>
@@ -230,7 +222,6 @@ const CollegePage = (props) => {
               :
               <Col xs={12}>
                 {reviews.map((review) => {
-                  console.log(review.rating);
                   return (
                     <Card style={{marginBottom: "15px"}}>
                       <Card.Body>

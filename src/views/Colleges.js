@@ -34,11 +34,16 @@ const Colleges = (props) => {
   **/
   const setCollegeListener = () => {
     setIsLoading(true);
-    COLLEGE_CONTROLLER.listenOnCollegeTable(callbackOnError).limit(10)
-      .onSnapshot(quereySnapshot => {
+    COLLEGE_CONTROLLER.listenOnCollegeTable(callbackOnError)
+      .onSnapshot(querySnapshot => {
+        querySnapshot.docChanges().forEach((change) => {
+          if(!querySnapshot.metadata.fromCache) {
+            console.log(change.doc.data().id + " came from server");
+          }
+        });
         var temp = [];
-        for(var i = 0; i < quereySnapshot.docs.length; i++) {
-          temp.push(quereySnapshot.docs[i].data());
+        for(var i = 0; i < querySnapshot.docs.length; i++) {
+          temp.push(querySnapshot.docs[i].data());
         }
         temp.sort((ele1, ele2) => {
           return ele2.reviews.length - ele1.reviews.length;
@@ -58,15 +63,29 @@ const Colleges = (props) => {
       return;
     }
     setIsFiltering(true);
-    var collegesCopy = colleges.slice();
-    var filteredColleges = [];
-    for(var i = 0; i < collegesCopy.length; i++) {
-      if(collegesCopy[i].name !== undefined && collegesCopy[i].name.toUpperCase().includes(search)) {
-        filteredColleges.push(collegesCopy[i]);
+    setTimeout(() => {
+      var collegesCopy = colleges.slice();
+      var filteredColleges = [];
+      var i = 0;
+      var x = collegesCopy.length - 1;
+      while(i < x) {
+        if(collegesCopy[i].name !== undefined && collegesCopy[i].name.toUpperCase().includes(search)) {
+          filteredColleges.push(collegesCopy[i]);
+        }
+        if(collegesCopy[x].name !== undefined && collegesCopy[x].name.toUpperCase().includes(search)) {
+          filteredColleges.push(collegesCopy[x]);
+        }
+        i++;
+        x--;
       }
-    }
-    setFiltered(filteredColleges);
-    setIsLoading(false);
+      // for(var i = 0; i < collegesCopy.length; i++) {
+      //   if(collegesCopy[i].name !== undefined && collegesCopy[i].name.toUpperCase().includes(search)) {
+      //     filteredColleges.push(collegesCopy[i]);
+      //   }
+      // }
+      setFiltered(filteredColleges);
+      setIsLoading(false);
+    }, 1000);
   }
 
   return (
@@ -87,7 +106,7 @@ const Colleges = (props) => {
       </Row>
       <Row>
         <Col className="right-align">
-          <div> Don't see your college? Add it <a href="/">here</a>. </div>
+          <div> Don't see your college? Add it <a href="https://docs.google.com/forms/d/e/1FAIpQLSf597udVymArVvKtZfODUy75FXw0kfPHfSP30vp-6vkwgkGNg/viewform?usp=sf_link">here</a>. </div>
         </Col>
       </Row>
       {isLoading ?

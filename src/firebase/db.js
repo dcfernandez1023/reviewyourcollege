@@ -1,8 +1,15 @@
 // firebase app object
 const firebaseApp = require('./firebaseApp.js');
 // firestore object
+firebaseApp.app.firestore().enablePersistence()
+  .catch((err) => {
+      if (err.code == 'failed-precondition') {
+          alert("Multiple tabs open, persistence can only be enabled with one tab open");
+      } else if (err.code == 'unimplemented') {
+          alert("The current browser does not support all of the features required to enable persistence");
+      }
+  });
 const DBFS = firebaseApp.app.firestore();
-
 /*
   * Writes/updates one piece of data to a specified collection.
   * @param id - the id of the document to write/update
