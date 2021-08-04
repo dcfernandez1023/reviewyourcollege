@@ -12,12 +12,16 @@ import {
   Tab,
   Nav,
   Form,
-  InputGroup
-}
-from 'react-bootstrap';
+  InputGroup,
+  Accordion
+} from 'react-bootstrap';
+import ReactStars from "react-rating-stars-component";
+import { v4 as uuidv4 } from 'uuid';
 import ReviewModal from './ReviewModal.js';
 
 const COLLEGE_CONTROLLER = require('../controllers/collegeController.js');
+const REVIEW_MODEL = require('../models/review.js');
+const COMMENT_MODEL = require('../models/comment.js');
 
 const CollegePage = (props) => {
   let { collegeId } = useParams();
@@ -30,10 +34,11 @@ const CollegePage = (props) => {
 
   const [college, setCollege] = useState();
   const [category, setCategory] = useState("all");
+  const [newComment, setNewComment] = useState({});
 
   useEffect(() => {
     setListener();
-  });
+  }, []);
 
   /*
    * Generic callback function to handle errors
@@ -56,21 +61,53 @@ const CollegePage = (props) => {
       });
   }
 
-  const getAllReviews = (categories) => {
-    var allReviews = [];
-    for(var i = 0; i < categories.length; i++) {
-      for(var x = 0; x < categories[i].reviews.length; x++) {
-        allReviews.push(categories[i].reviews[x]);
-      }
-    }
-    return allReviews;
-  }
-
   const onCloseReviewModal = () => {
     setAction("");
     setModalHeader("");
     setShow(false);
     setReview();
+  }
+
+  const getFilterReviews = () => {
+    if(category === "all") {
+      return college.reviews;
+    }
+    var reviews = [];
+    for(var i = 0; i < college.reviews.length; i++) {
+      if(college.reviews[i].category === category) {
+        reviews.push(college.reviews[i]);
+      }
+    }
+    return reviews;
+  }
+
+  const writeCollegeReview = (review) => {
+    var collegeCopy = Object.assign({}, college);
+    collegeCopy.reviews.push(review);
+    COLLEGE_CONTROLLER.writeCollege(college, setCollege, callbackOnError);
+  }
+
+  const writeComment = (reviewId) => {
+    if(newComment.length == 0) {
+      return;
+    }
+    var commentObj = Object.assign({}, COMMENT_MODEL.comment);
+    commentObj.id = uuidv4().toString();
+    commentObj.text = newComment[reviewId];
+    commentObj.timestamp = new Date().getTime();
+    var collegeCopy = Object.assign({}, college);
+    for(var i = 0; i < collegeCopy.reviews.length; i++) {
+      if(collegeCopy.reviews[i].id === reviewId) {
+        collegeCopy.reviews[i].comments.push(commentObj);
+        break;
+      }
+    }
+    const callback = (data) => {
+      var copy = Object.assign({}, newComment);
+      copy[reviewId] = "";
+      setNewComment(copy);
+    };
+    COLLEGE_CONTROLLER.writeCollege(college, callback, callbackOnError);
   }
 
   if(college === undefined) {
@@ -80,7 +117,7 @@ const CollegePage = (props) => {
       </div>
     );
   }
-  const allReviews = getAllReviews(college.categories);
+  const reviews = getFilterReviews();
   return (
     <div>
       <ReviewModal
@@ -88,7 +125,8 @@ const CollegePage = (props) => {
         header={modalHeader}
         show={show}
         review={review}
-        onClickSubmit={undefined}
+        categories={college.categories}
+        onClickSubmit={writeCollegeReview}
         onClose={onCloseReviewModal}
       />
       <Row>
@@ -143,8 +181,7 @@ const CollegePage = (props) => {
               <Col xs={5}>
                 <InputGroup className="mb-3">
                   <InputGroup.Text> Categories </InputGroup.Text>
-                  <Form.Control
-                    as="select"
+                  <Form.Select
                     onChange={(e) => {
                       let val = e.target.value;
                       if(val === "add") {
@@ -166,7 +203,7 @@ const CollegePage = (props) => {
                       );
                     })}
                     <option value="add"> + Add a category </option>
-                  </Form.Control>
+                  </Form.Select>
                 </InputGroup>
               </Col>
               <Col xs={7} className="right-align">
@@ -175,8 +212,9 @@ const CollegePage = (props) => {
                   style={{backgroundColor: "#EBEBEB", paddingTop: "3px", paddingBottom: "3px"}}
                   onClick={() => {
                     setAction("add");
-                    setModalHeader("Add review");
+                    setModalHeader("Add Review");
                     setShow(true);
+                    setReview(Object.assign({}, REVIEW_MODEL.review));
                   }}
                 >
                   Add Review
@@ -185,9 +223,119 @@ const CollegePage = (props) => {
             </Row>
             <br/>
             <Row>
-              <Col>
-                {}
+              {reviews == 0 ?
+                <Col>
+                  No reviews under this category
+                </Col>
+              :
+              <Col xs={12}>
+                {reviews.map((review) => {
+                  console.log(review.rating);
+                  return (
+                    <Card style={{marginBottom: "15px"}}>
+                      <Card.Body>
+                        <Card.Title>
+                          <ReactStars
+                            count={5}
+                            value={review.rating}
+                            edit={false}
+                            size={24}
+                            activeColor="#ffd700"
+                          />
+                          {review.title}
+                        </Card.Title>
+                        <Card.Text> <i> {review.category} </i> </Card.Text>
+
+                        <div> {review.text} </div>
+                        <hr style={{border: "1px solid lightGray", width: "25%"}} />
+                        <Accordion flush>
+                          <Accordion.Item eventKey="0">
+                            <Accordion.Header> Comment Thread </Accordion.Header>
+                            <Accordion.Body>
+                              {review.comments.length == 0 ?
+                                <p> No comments yet </p>
+                              :
+                                <div>
+                                  {review.comments.map((comment, index) => {
+                                    var dateStr = new Date(comment.timestamp).toLocaleDateString();
+                                    return (
+                                      <div key={comment.id}>
+                                        <Row>
+                                          <Col>
+                                            <div>
+                                              <small>
+                                                <i>
+                                                  {comment.user.trim().length == 0 ?
+                                                    "Anonymous on " + dateStr
+                                                  :
+                                                    comment.user + " on " + dateStr
+                                                  }
+                                                </i>
+                                              </small>
+                                            </div>
+                                            <div>
+                                              {comment.text}
+                                            </div>
+                                          </Col>
+                                        </Row>
+                                        {index < (review.comments.length) - 1 ?
+                                          <hr style={{border: "1px solid lightGray", width: "25%"}} />
+                                        :
+                                          <div></div>
+                                        }
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              }
+                              <hr style={{border: "1px solid lightGray"}} />
+                              <Row style={{marginBottom: "8px"}}>
+                                <Col>
+                                  <Form.Control
+                                    as="textarea"
+                                    placeholder="Leave a comment"
+                                    value={newComment[review.id] === undefined ? "": newComment[review.id]}
+                                    onChange={(e) => {
+                                      var copy = Object.assign({}, newComment);
+                                      copy[review.id] = e.target.value;
+                                      setNewComment(copy);
+                                    }}
+                                  />
+                                </Col>
+                              </Row>
+                              <Row>
+                                <Col className="right-align">
+                                  <Button
+                                    variant="success"
+                                    onClick={() => {writeComment(review.id)}}
+                                  >
+                                    Post
+                                  </Button>
+                                </Col>
+                              </Row>
+                            </Accordion.Body>
+                          </Accordion.Item>
+                        </Accordion>
+                      </Card.Body>
+                      <Card.Footer className="text-muted">
+                        <Col className="right-align">
+                          {review.user.trim().length == 0 ?
+                            <small>
+                              {new Date(review.timestamp).toLocaleDateString() + " by Anonymous"}
+                            </small>
+                          :
+                          <small>
+                            {new Date(review.timestamp).toLocaleDateString() + " by " + review.user}
+                          </small>
+                          }
+
+                        </Col>
+                      </Card.Footer>
+                    </Card>
+                  );
+                })}
               </Col>
+              }
             </Row>
           </Tab>
         </Tabs>

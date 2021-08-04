@@ -17,4 +17,8 @@ const listenOnCollegeDoc = (id, callbackOnError) => {
   return DB.getQueryWithFilter("id", id, "colleges", callbackOnError);
 }
 
-export { getAllColleges, listenOnCollegeTable, listenOnCollegeDoc }
+const writeCollege = (college, callback, callbackOnError) => {
+  DB.writeOne(college.id, college, "colleges", callback, callbackOnError);
+}
+
+export { getAllColleges, listenOnCollegeTable, listenOnCollegeDoc, writeCollege}

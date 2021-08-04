@@ -40,6 +40,9 @@ const Colleges = (props) => {
         for(var i = 0; i < quereySnapshot.docs.length; i++) {
           temp.push(quereySnapshot.docs[i].data());
         }
+        temp.sort((ele1, ele2) => {
+          return ele2.reviews.length - ele1.reviews.length;
+        });
         setColleges(temp);
         setIsLoading(false);
       });
@@ -119,10 +122,10 @@ const Colleges = (props) => {
                             {college.name}
                           </Col>
                           <Col xs={6} className="right-align">
-                            {college.avgRating == -1 ?
-                              <span> No ratings </span>
+                            {college.reviews.length == 1 ?
+                              college.reviews.length + " review"
                             :
-                              <span> Avg rating: {college.avgRating} </span>
+                              college.reviews.length + " reviews"
                             }
                           </Col>
                         </Row>
@@ -144,11 +147,11 @@ const Colleges = (props) => {
                             {college.name}
                           </Col>
                           <Col xs={6} className="right-align">
-                            {college.avgRating == -1 ?
-                              <span> No ratings </span>
-                            :
-                              <span> Avg rating: {college.avgRating} </span>
-                            }
+                          {college.reviews.length == 1 ?
+                            college.reviews.length + " review"
+                          :
+                            college.reviews.length + " reviews"
+                          }
                           </Col>
                         </Row>
                       </ListGroup.Item>
