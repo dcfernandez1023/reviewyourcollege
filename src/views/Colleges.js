@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Navbar, Nav, Form, Spinner, ListGroup, Button, InputGroup, OverlayTrigger, Tooltip } from 'react-bootstrap';
+import { Card, Container, Row, Col, Navbar, Nav, Form, Spinner, ListGroup, Button, InputGroup, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import {
   BrowserRouter as Router,
   Switch,
@@ -8,6 +8,7 @@ import {
 } from "react-router-dom";
 
 const COLLEGE_CONTROLLER = require('../controllers/collegeController.js');
+const NEWS_CONTROLLER = require('../controllers/newsController.js');
 
 const Colleges = (props) => {
   const [colleges, setColleges] = useState([]);
@@ -17,9 +18,12 @@ const Colleges = (props) => {
   const [isLoading, setIsLoading] = useState(false);
   const [searched, setSearched] = useState(false);
   const [lastSearch, setLastSearch] = useState("");
+  const [loadingNews, setLoadingNews] = useState(false);
+  const [news, setNews] = useState([]);
 
   useEffect(() => {
     setListenerOnTopFiveMostReviewed();
+    setNewsListener();
   }, []);
 
   /*
@@ -29,6 +33,24 @@ const Colleges = (props) => {
   const callbackOnError = (error) => {
     // TODO: handle this more elegantly
     alert(error.message);
+  }
+
+  const setNewsListener = () => {
+    setLoadingNews(true);
+    NEWS_CONTROLLER.listenOnNewsTable(callbackOnError)
+      .onSnapshot(querySnapshot => {
+        querySnapshot.docChanges().forEach((change) => {
+          if(!querySnapshot.metadata.fromCache) {
+            console.log(change.doc.data().id + " came from server");
+          }
+        });
+        var temp = [];
+        for(var i = 0; i < querySnapshot.docs.length; i++) {
+          temp.push(querySnapshot.docs[i].data());
+        }
+        setNews(temp);
+        setLoadingNews(false);
+      });
   }
 
   /*
@@ -157,10 +179,10 @@ const Colleges = (props) => {
               placeholder="Search for your college"
             />
             <Button
-              variant="outline-dark"
+              variant="outline-secondary"
               onClick={() => searchColleges(document.getElementById("college-search-input").value)}
             >
-              Go
+              Search
             </Button>
           </InputGroup>
         </Col>
@@ -173,7 +195,7 @@ const Colleges = (props) => {
           <div> Don't see your college? Add it <a href="https://docs.google.com/forms/d/e/1FAIpQLSf597udVymArVvKtZfODUy75FXw0kfPHfSP30vp-6vkwgkGNg/viewform?usp=sf_link">here</a>. </div>
         </Col>
       </Row>
-      {isLoading ?
+      {isLoading || loadingNews ?
         <div className="spinner-container">
           <Spinner animation="border" />
         </div>
@@ -231,7 +253,7 @@ const Colleges = (props) => {
           </Row>
           <Row>
             <Col>
-            <h5> 5 Most Reviewed Colleges: </h5>
+            <h5> Most Reviewed Colleges </h5>
             {mostReviewed.length == 0 ?
               <div style={{marginTop: "15px"}}>
                 <p style={{marginLeft: "25px"}}> No results to display </p>
@@ -263,6 +285,34 @@ const Colleges = (props) => {
               </ListGroup>
             }
             </Col>
+          </Row>
+          <br/>
+          <Row style={{marginBottom: "5px"}}>
+            <Col>
+              <h5> Random College News Articles </h5>
+            </Col>
+          </Row>
+          <Row>
+            {news.map((article) => {
+              return (
+                <Col key ={article.id} md={3} style={{marginBottom: "20px"}}>
+                  <a
+                    className="clickable-card"
+                    onClick={() => {
+                      window.open(article.url, "_blank");
+                    }}
+                    style={{textDecoration:"none",color:"black"}}
+                  >
+                    <Card className="card-equal-height">
+                      <img src={article.urlToImage} className="news-card-image"/>
+                      <Card.Body>
+                        <Card.Title> {article.title} </Card.Title>
+                      </Card.Body>
+                    </Card>
+                  </a>
+                </Col>
+              );
+            })}
           </Row>
         </div>
       }
