@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Navbar, Nav, Form, Spinner, ListGroup, Button } from 'react-bootstrap';
+import { Container, Row, Col, Navbar, Nav, Form, Spinner, ListGroup, Button, InputGroup, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import {
   BrowserRouter as Router,
   Switch,
@@ -12,11 +12,14 @@ const COLLEGE_CONTROLLER = require('../controllers/collegeController.js');
 const Colleges = (props) => {
   const [colleges, setColleges] = useState([]);
   const [filtered, setFiltered] = useState([]);
+  const [mostReviewed, setMostReviewed] = useState([]);
   const [isFiltering, setIsFiltering] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [searched, setSearched] = useState(false);
+  const [lastSearch, setLastSearch] = useState("");
 
   useEffect(() => {
-    setCollegeListener();
+    setListenerOnTopFiveMostReviewed();
   }, []);
 
   /*
@@ -46,47 +49,93 @@ const Colleges = (props) => {
           temp.push(querySnapshot.docs[i].data());
         }
         temp.sort((ele1, ele2) => {
-          return ele2.reviews.length - ele1.reviews.length;
+          return ele2.numReviews - ele1.numReviews;
         });
         setColleges(temp);
         setIsLoading(false);
       });
   }
 
-  const filterSearch = (e) => {
+  const setListenerOnTopFiveMostReviewed = () => {
     setIsLoading(true);
-    var search = e.target.value.toUpperCase();
-    if(search.trim().length == 0) {
+    COLLEGE_CONTROLLER.getTopHundredMostReviewed(callbackOnError)
+    .onSnapshot(querySnapshot => {
+      querySnapshot.docChanges().forEach((change) => {
+        if(!querySnapshot.metadata.fromCache) {
+          console.log(change.doc.data().id + " came from server");
+        }
+      });
+      var temp = [];
+      for(var i = 0; i < querySnapshot.docs.length; i++) {
+        temp.push(querySnapshot.docs[i].data());
+      }
+      setMostReviewed(temp);
       setIsLoading(false);
-      setFiltered([]);
-      setIsFiltering(false);
+    });
+  }
+
+  const searchColleges = (searchVal) => {
+    if(searchVal.trim().length == 0 || searchVal.trim() === lastSearch.trim()) {
       return;
     }
-    setIsFiltering(true);
-    setTimeout(() => {
-      var collegesCopy = colleges.slice();
-      var filteredColleges = [];
-      var i = 0;
-      var x = collegesCopy.length - 1;
-      while(i < x) {
-        if(collegesCopy[i].name !== undefined && collegesCopy[i].name.toUpperCase().includes(search)) {
-          filteredColleges.push(collegesCopy[i]);
+    setIsLoading(true);
+    searchVal = searchVal.trim();
+    COLLEGE_CONTROLLER.searchColleges(searchVal, callbackOnError)
+      .onSnapshot(querySnapshot => {
+        querySnapshot.docChanges().forEach((change) => {
+          if(!querySnapshot.metadata.fromCache) {
+            console.log(change.doc.data().id + " came from server");
+          }
+        });
+        var temp = [];
+        for(var i = 0; i < querySnapshot.docs.length; i++) {
+          temp.push(querySnapshot.docs[i].data());
         }
-        if(collegesCopy[x].name !== undefined && collegesCopy[x].name.toUpperCase().includes(search)) {
-          filteredColleges.push(collegesCopy[x]);
-        }
-        i++;
-        x--;
-      }
-      // for(var i = 0; i < collegesCopy.length; i++) {
-      //   if(collegesCopy[i].name !== undefined && collegesCopy[i].name.toUpperCase().includes(search)) {
-      //     filteredColleges.push(collegesCopy[i]);
-      //   }
-      // }
-      setFiltered(filteredColleges);
-      setIsLoading(false);
-    }, 1000);
+        temp.sort((ele1, ele2) => {
+          return ele2.numReviews - ele1.numReviews;
+        });
+        setColleges(temp);
+        setIsLoading(false);
+        setSearched(true);
+        setLastSearch(searchVal);
+      });
   }
+
+  // const filterSearch = (e) => {
+  //   return;
+  //   setIsLoading(true);
+  //   var search = e.target.value.toUpperCase();
+  //   if(search.trim().length == 0) {
+  //     setIsLoading(false);
+  //     setFiltered([]);
+  //     setIsFiltering(false);
+  //     return;
+  //   }
+  //   setIsFiltering(true);
+  //   setTimeout(() => {
+  //     var collegesCopy = colleges.slice();
+  //     var filteredColleges = [];
+  //     var i = 0;
+  //     var x = collegesCopy.length - 1;
+  //     while(i < x) {
+  //       if(collegesCopy[i].name !== undefined && collegesCopy[i].name.toUpperCase().includes(search)) {
+  //         filteredColleges.push(collegesCopy[i]);
+  //       }
+  //       if(collegesCopy[x].name !== undefined && collegesCopy[x].name.toUpperCase().includes(search)) {
+  //         filteredColleges.push(collegesCopy[x]);
+  //       }
+  //       i++;
+  //       x--;
+  //     }
+  //     // for(var i = 0; i < collegesCopy.length; i++) {
+  //     //   if(collegesCopy[i].name !== undefined && collegesCopy[i].name.toUpperCase().includes(search)) {
+  //     //     filteredColleges.push(collegesCopy[i]);
+  //     //   }
+  //     // }
+  //     setFiltered(filteredColleges);
+  //     setIsLoading(false);
+  //   }, 1000);
+  // }
 
   return (
     <Container>
@@ -99,15 +148,27 @@ const Colleges = (props) => {
       <br/>
       <Row>
         <Col>
-          <Form.Control
-            as="input"
-            size="lg"
-            placeholder="Search for your college"
-            onChange={(e) => {filterSearch(e)}}
-          />
+          <i> Searches are case sensitive </i>
+          <InputGroup>
+            <Form.Control
+              id="college-search-input"
+              as="input"
+              size="lg"
+              placeholder="Search for your college"
+            />
+            <Button
+              variant="outline-dark"
+              onClick={() => searchColleges(document.getElementById("college-search-input").value)}
+            >
+              Go
+            </Button>
+          </InputGroup>
         </Col>
       </Row>
       <Row style={{marginBottom: "10px"}}>
+        <Col>
+
+        </Col>
         <Col className="right-align">
           <div> Don't see your college? Add it <a href="https://docs.google.com/forms/d/e/1FAIpQLSf597udVymArVvKtZfODUy75FXw0kfPHfSP30vp-6vkwgkGNg/viewform?usp=sf_link">here</a>. </div>
         </Col>
@@ -118,73 +179,95 @@ const Colleges = (props) => {
         </div>
       :
         <div>
-          <Row style={{marginBottom: "8px"}}>
-            <Col>
-              {isFiltering ?
-                <strong> Showing {filtered.length} colleges </strong>
-              :
-                <strong> Showing {colleges.length} colleges </strong>
-              }
-            </Col>
-          </Row>
           <Row>
             <Col>
-              {isFiltering ?
-                <ListGroup variant="flush">
-                  {filtered.map((college) => {
-                    return (
-                      <ListGroup.Item
-                        action
-                        key={college.id}
-                        onClick={() => {
-                          window.location.pathname = "/college/" + college.id}}
-                      >
-                        <Row>
-                          <Col xs={6}>
-                            {college.name}
-                          </Col>
-                          <Col xs={6} className="right-align">
+              {searched ?
+                <div>
+                  <h5>
+                    Search Results {"(" + colleges.length + ")"}
+                    <Button
+                      variant="light"
+                      size="sm"
+                      onClick={() => {
+                        setLastSearch("");
+                        setColleges([]);
+                        setSearched(false);
+                      }}
+                      style={{marginLeft: "5px"}}
+                    >
+                      x
+                    </Button>
+                  </h5>
+                  <ListGroup>
+                    {colleges.map((college) => {
+                      return (
+                        <ListGroup.Item
+                          action
+                          key={college.id}
+                          onClick={() => {window.location.pathname = "/college/" + college.id}}
+                        >
+                          <Row>
+                            <Col xs={6}>
+                              {college.name}
+                            </Col>
+                            <Col xs={6} className="right-align">
                             {college.reviews.length == 1 ?
                               college.reviews.length + " review"
                             :
                               college.reviews.length + " reviews"
                             }
-                          </Col>
-                        </Row>
-                      </ListGroup.Item>
-                    );
-                  })}
-                </ListGroup>
+                            </Col>
+                          </Row>
+                        </ListGroup.Item>
+                      );
+                    })}
+                  </ListGroup>
+                  <hr style={{border: "1px solid black"}} />
+                </div>
               :
-                <ListGroup variant="flush">
-                  {colleges.map((college) => {
-                    return (
-                      <ListGroup.Item
-                        action
-                        key={college.id}
-                        onClick={() => {window.location.pathname = "/college/" + college.id}}
-                      >
-                        <Row>
-                          <Col xs={6}>
-                            {college.name}
-                          </Col>
-                          <Col xs={6} className="right-align">
-                          {college.reviews.length == 1 ?
-                            college.reviews.length + " review"
-                          :
-                            college.reviews.length + " reviews"
-                          }
-                          </Col>
-                        </Row>
-                      </ListGroup.Item>
-                    );
-                  })}
-                </ListGroup>
+                <div></div>
               }
-          </Col>
+            </Col>
+          </Row>
+          <Row>
+            <Col>
+            <h5> 5 Most Reviewed Colleges: </h5>
+            {mostReviewed.length == 0 ?
+              <div style={{marginTop: "15px"}}>
+                <p style={{marginLeft: "25px"}}> No results to display </p>
+              </div>
+            :
+              <ListGroup>
+                {mostReviewed.map((college) => {
+                  return (
+                    <ListGroup.Item
+                      action
+                      key={college.id}
+                      onClick={() => {window.location.pathname = "/college/" + college.id}}
+                    >
+                      <Row>
+                        <Col xs={6}>
+                          {college.name}
+                        </Col>
+                        <Col xs={6} className="right-align">
+                        {college.reviews.length == 1 ?
+                          college.reviews.length + " review"
+                        :
+                          college.reviews.length + " reviews"
+                        }
+                        </Col>
+                      </Row>
+                    </ListGroup.Item>
+                  );
+                })}
+              </ListGroup>
+            }
+            </Col>
           </Row>
         </div>
       }
+      <br/>
+      <br/>
     </Container>
   );
 }
