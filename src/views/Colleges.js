@@ -188,9 +188,6 @@ const Colleges = (props) => {
         </Col>
       </Row>
       <Row style={{marginBottom: "10px"}}>
-        <Col>
-
-        </Col>
         <Col className="right-align">
           <div> Don't see your college? Add it <a href="https://docs.google.com/forms/d/e/1FAIpQLSf597udVymArVvKtZfODUy75FXw0kfPHfSP30vp-6vkwgkGNg/viewform?usp=sf_link">here</a>. </div>
         </Col>
@@ -206,7 +203,7 @@ const Colleges = (props) => {
               {searched ?
                 <div>
                   <h5>
-                    Search Results {"(" + colleges.length + ")"}
+                    🔍 Search Results {"(" + colleges.length + ")"}
                     <Button
                       variant="light"
                       size="sm"
@@ -244,16 +241,20 @@ const Colleges = (props) => {
                       );
                     })}
                   </ListGroup>
-                  <hr style={{border: "1px solid black"}} />
                 </div>
               :
                 <div></div>
               }
             </Col>
           </Row>
+          {searched ?
+            <br/>
+          :
+            <div></div>
+          }
           <Row>
             <Col>
-            <h5> Most Reviewed Colleges </h5>
+            <h5> ⬆️ Most Reviewed Colleges </h5>
             {mostReviewed.length == 0 ?
               <div style={{marginTop: "15px"}}>
                 <p style={{marginLeft: "25px"}}> No results to display </p>
@@ -289,9 +290,36 @@ const Colleges = (props) => {
           <br/>
           <Row style={{marginBottom: "5px"}}>
             <Col>
-              <h5> Random College News Articles </h5>
+              <h5> 📰 Random College Articles </h5>
             </Col>
           </Row>
+          <Row>
+            <Col>
+              <ListGroup>
+                {news.map((article) => {
+                  return (
+                    <ListGroup.Item
+                      key={article.id}
+                      action
+                      onClick={() => {
+                        window.open(article.url, "_blank");
+                      }}
+                    >
+                      <Row>
+                        <Col sm={8}>
+                          {article.title}
+                        </Col>
+                        <Col sm={4} className="right-align">
+                          	🛈 {article.source.name}
+                        </Col>
+                      </Row>
+                    </ListGroup.Item>
+                  );
+                })}
+              </ListGroup>
+            </Col>
+          </Row>
+          {/*
           <Row>
             {news.map((article) => {
               return (
@@ -314,6 +342,7 @@ const Colleges = (props) => {
               );
             })}
           </Row>
+          */}
         </div>
       }
       <br/>
