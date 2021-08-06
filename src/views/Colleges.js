@@ -189,7 +189,7 @@ const Colleges = (props) => {
       </Row>
       <Row style={{marginBottom: "10px"}}>
         <Col className="right-align">
-          <div> Don't see your college? Add it <a href="https://docs.google.com/forms/d/e/1FAIpQLSf597udVymArVvKtZfODUy75FXw0kfPHfSP30vp-6vkwgkGNg/viewform?usp=sf_link">here</a>. </div>
+          <div> Don't see your college? Add it <a href="https://docs.google.com/forms/d/e/1FAIpQLSf597udVymArVvKtZfODUy75FXw0kfPHfSP30vp-6vkwgkGNg/viewform?usp=sf_link" target="_blank">here</a>. </div>
         </Col>
       </Row>
       {isLoading || loadingNews ?
