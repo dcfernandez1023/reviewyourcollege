@@ -333,6 +333,15 @@ const CollegePage = (props) => {
       </Row>
       <br/>
       <br/>
+      <hr/>
+      <Row>
+          <Col md={7}>
+          <p>© reviewyourcollege 2021</p>
+          </Col>
+          <Col md={5}>
+          <p style={{float:"right"}}> 📮<a href="https://forms.gle/iMbj9NmKuHitaReF7" target="_blank"> Submit Feedback </a></p>
+          </Col>
+      </Row>
     </div>
   );
 }
